@@ -4,21 +4,25 @@ from io import BytesIO
 import cv2
 import numpy as np
 import src.image_processing
+import tempfile
 
 app = FastAPI()
 
 @app.post("/process-image/")
 async def process_image(image: UploadFile = File(...)):
     # Save the uploaded image to a temporary file
-    image_bytes = await image.read()
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    post_file = image.file.read()
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
+        tmp_file.write(post_file)
+
+    print(tmp_file.name)
     weight_path = "weights/best.pt"
     # Process image and weights
-    filtered_classifications_json, scale_json, filtered_classifications_all, x1y1_list_all, x2y2_list_all = src.image_processing.process_image(img, weight_path)
+    filtered_classifications_json, scale_json, filtered_classifications_all, x1y1_list_all, x2y2_list_all = src.image_processing.process_image(tmp_file.name, weight_path)
     
     # Get the list of modified images and the corresponding scale values
-    image_list, scale_list = src.image_processing.save_bounding_boxes_for_all_scales(img, x1y1_list_all, x2y2_list_all, filtered_classifications_all)
+    image_list, scale_list = src.image_processing.save_bounding_boxes_for_all_scales(tmp_file.name, x1y1_list_all, x2y2_list_all, filtered_classifications_all)
     
     # Convert each processed image into a byte stream
     image_streams = []

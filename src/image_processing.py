@@ -1,7 +1,7 @@
 import cv2
-from YOLO_with_slicer import YOLO_with_slicer 
-from ocr_filter import Ocr_filter
-import hole_classification
+from src.YOLO_with_slicer import YOLO_with_slicer 
+from src.ocr_filter import Ocr_filter
+import src.hole_classification
 from collections import Counter
 import json
 
@@ -79,7 +79,7 @@ def process_image(image_path, weight_path, KNN_THRESHOLD=1.0):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB if necessary
 
     # Get image dimensions and DPI
-    width, height, dpi = hole_classification.get_width_height_dpi(image_path)
+    width, height, dpi = src.hole_classification.get_width_height_dpi(image_path)
 
     # Initialize OCR filter and get detected standard and scale
     ocr = Ocr_filter()
@@ -101,7 +101,7 @@ def process_image(image_path, weight_path, KNN_THRESHOLD=1.0):
             cls, score, bbox = result[0], result[1], result[2]
             if score >= 0.40:
                 # Convert bounding box to mm and pixel coordinates
-                width_mm, height_mm, x1y1, x2y2 = hole_classification.get_bounding_box_mm_and_pixel(
+                width_mm, height_mm, x1y1, x2y2 = src.hole_classification.get_bounding_box_mm_and_pixel(
                     bbox, scale, dpi, width, height)
 
                 mm_widths_img.append(width_mm)
@@ -118,7 +118,7 @@ def process_image(image_path, weight_path, KNN_THRESHOLD=1.0):
     filtered_classifications_by_scale = {}
     
     for i, scale in enumerate(scale_list):
-        classifications = hole_classification.classify_holes_knn(mm_widths_img_all[i], mm_heights_img_all[i], distance_threshold=KNN_THRESHOLD)
+        classifications = src.hole_classification.classify_holes_knn(mm_widths_img_all[i], mm_heights_img_all[i], distance_threshold=KNN_THRESHOLD)
 
         # Filter classifications based on detected standards
         filtered_classifications = [value if value in detected_standard else 'Unknown' for value in classifications]

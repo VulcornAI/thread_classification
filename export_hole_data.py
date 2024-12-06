@@ -1,12 +1,12 @@
 import argparse
-import image_processing
+import src.image_processing
 import cv2
 
 def main(args):
     filtered_classifications_json, scale_json, filtered_classifications_all, x1y1_list_all, x2y2_list_all = image_processing.process_image(args.image_path, args.weight_path)
 
     # Get the list of modified images and the list of scale values
-    image_list, scale_list = image_processing.save_bounding_boxes_for_all_scales(args.image_path, x1y1_list_all, x2y2_list_all, filtered_classifications_all)
+    image_list, scale_list = src.image_processing.save_bounding_boxes_for_all_scales(args.image_path, x1y1_list_all, x2y2_list_all, filtered_classifications_all)
 
     # Loop through the images and their corresponding scale values
     for idx, (img, scale) in enumerate(zip(image_list, scale_list)):
